@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.linalg import sqrtm
+from scipy.linalg import sqrtm, eigh
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from utils import visualize_eigenvectors
+from utils import *
 
 
 class SpectralClustering():
@@ -16,24 +16,26 @@ class SpectralClustering():
     def __init__(self, k):
         self.k = k
     
-    def cluster(self, A, Z_v=None):
-        """Clusters the eigenvectors of the Laplacian L = D - A.
+    def cluster(self, A, sym=False):
+        """Clusters the eigenvectors of the Laplacian matrix.
 
         Args:
             A ((n, n) np.array): adjacency matrix.
-            Z_v ((n,) np.array): true labels array. Added for visualization
-            purposes.
+            sym (bool): whether to use symmetric (normalized) Laplacian or not.
 
         Returns:
             kmeans.labels_ ((n,) np.array): labels assigned to eigenvectors.
             cluster_centers_ ((n, n) np.array): centroids.
         """
 
+        n, _ = A.shape
         D = np.diag(np.sum(A, axis=1))
-        L = np.linalg.inv(sqrtm(D)) @ A @ np.linalg.inv(sqrtm(D))
-        eigvecs = np.linalg.eigh(L)[1]
+        L = np.linalg.inv(sqrtm(D))@A@np.linalg.inv(sqrtm(D)) if sym else D-A
+        eigvals, eigvecs = eigh(L)
         eigvecs /= np.linalg.norm(eigvecs, axis=0)
-        if Z_v is not None:
-            visualize_eigenvectors(eigvecs, Z_v)
-        kmeans = KMeans(n_clusters = self.k).fit(eigvecs.T)
-        return kmeans.labels_, kmeans.cluster_centers_.T
+        eigvecs = eigvecs[:, (n-self.k):]  # largest k eigenvectors
+        print(eigvecs)
+        visualize_eigenvectors(eigvecs)
+        kmeans = KMeans(n_clusters = self.k).fit(eigvecs)
+
+        return kmeans.predict(eigvecs), kmeans.cluster_centers_.T

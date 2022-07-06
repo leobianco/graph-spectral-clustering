@@ -32,8 +32,33 @@ def accuracy(labels, Z_v):
     return accuracy, saved_permutation
 
 
-def visualize_eigenvectors(eigvecs, Z_v):
-    # Visualization
-    pcaeigvecs = PCA(n_components=2).fit_transform(eigvecs.T)
-    plt.scatter(pcaeigvecs[:,0], pcaeigvecs[:,1], c=Z_v)
+def visualize_eigenvectors(eigvecs):
+    pcaeigvecs = PCA(n_components=2).fit_transform(eigvecs)
+    plt.scatter(pcaeigvecs[:,0], pcaeigvecs[:,1])
     plt.show()
+
+
+def visualize_eigenvalues(eigvals):
+    plt.plot(eigvals)
+    plt.scatter(list(range(eigvals.shape[0])), eigvals, c='darkblue')
+    plt.show()
+
+
+def draw_graph(A, Z_v):
+    """Wrapper for networkx drawing capabilities.
+
+    Args:
+        A ((n, n) np.array): adjacency matrix of the graph to be shown.
+        permutation ((k,) np.array): permutation of labels maximizing accuracy.
+        Z_v (n np.array): vector with true community labels.
+        tau ((n, k) np.array): matrix of variational parameters.
+
+    Returns:
+        None (pyplot window with graph)
+    """
+
+    n = A.shape[0]
+    G = nx.from_numpy_matrix(A)
+    pos = nx.spring_layout(G)
+    nx.draw(G, pos=pos, node_color=Z_v, with_labels=False)
+    plt.show();

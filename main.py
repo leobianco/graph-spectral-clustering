@@ -16,22 +16,34 @@ parser.add_argument(
         '-n', help='Number of points in graph to be generated',
         type=int, default=100
         )
+parser.add_argument(
+        '-vis', '--visual',
+        help='Whether to visualize generated graph or not.', action='store_true'
+        )
+parser.add_argument(
+        '-sym', '--symmetric',
+        help='Whether to use symmetric (normalized) Laplacian or not',
+        action='store_true'
+        )
 args = parser.parse_args()
 
 
 def main():
     # Generate SBM graph
     Gamma = np.array([
-            [1, 0.0],
-            [0.0, 1]
+            [0.1, 0.05],
+            [0.05, 0.3] 
             ])
-    Pi = np.array([0.5, 0.5])
+    Pi = np.array([0.45, 0.55])
     model = SBM(args.n, Gamma, Pi)
     Z, Z_v, A = model.sample()
+    if args.visual:
+        draw_graph(A, Z_v)
 
     # Run the spectral clustering algorithm
     spectral_clustering = SpectralClustering(args.k)
-    labels, centroids = spectral_clustering.cluster(A, Z_v)
+    labels, centroids = spectral_clustering.cluster(A)
+    print(labels)
     accuracy_value, accuracy_permutation = accuracy(labels, Z_v)
     print('Accuracy: ', accuracy_value)
 
