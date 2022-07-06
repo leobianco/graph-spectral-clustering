@@ -32,9 +32,11 @@ def accuracy(labels, Z_v):
     return accuracy, saved_permutation
 
 
-def visualize_eigenvectors(eigvecs):
-    pcaeigvecs = PCA(n_components=2).fit_transform(eigvecs)
-    plt.scatter(pcaeigvecs[:,0], pcaeigvecs[:,1])
+def visualize_eigenvectors(eigvecs, centroids):
+    n_centroids = centroids.shape[0]
+    pca = PCA(n_components=2).fit_transform(np.vstack((eigvecs, centroids)))
+    plt.scatter(pca[:-n_centroids,0], pca[:-n_centroids,1])
+    plt.scatter(pca[-n_centroids:,0], pca[-n_centroids:, 1], c='orange')
     plt.show()
 
 

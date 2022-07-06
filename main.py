@@ -36,10 +36,11 @@ args = parser.parse_args()
 def main():
     # Generate SBM graph
     Gamma = np.array([
-            [0.9, 0.05],
-            [0.05, 0.9] 
+            [0.9, 0.01, 0.03],
+            [0.01, 0.9, 0.01],
+            [0.03, 0.01, 0.9]
             ])
-    Pi = np.array([0.45, 0.55])
+    Pi = np.array(3*[1/3])
     model = SBM(args.n, Gamma, Pi)
     Z, Z_v, A = model.sample()
     if args.visual:

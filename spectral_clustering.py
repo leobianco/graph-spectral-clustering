@@ -31,15 +31,19 @@ class SpectralClustering():
         """
 
         n, _ = A.shape
-
-        # Observed
         D = np.diag(np.sum(A, axis=1))
         L = D-A if unn\
                 else np.eye(n)-np.linalg.inv(sqrtm(D))@A@np.linalg.inv(sqrtm(D))
+
         eigvals, eigvecs = eigh(L)
+        eigvals = eigvals[(n-self.k):] if largest else eigvals[:self.k]
         eigvecs = eigvecs[:, (n-self.k):] if largest else eigvecs[:, :self.k]
         eigvecs /= np.linalg.norm(eigvecs, axis=0)
-        visualize_eigenvectors(eigvecs)
-        kmeans = KMeans(n_clusters = self.k).fit(eigvecs)
 
-        return kmeans.predict(eigvecs), kmeans.cluster_centers_.T
+        kmeans = KMeans(n_clusters = self.k).fit(eigvecs)
+        labels = kmeans.predict(eigvecs)
+        centroids = kmeans.cluster_centers_ 
+        visualize_eigenvectors(eigvecs, centroids)
+        visualize_eigenvalues(eigvals)
+
+        return labels, centroids 
