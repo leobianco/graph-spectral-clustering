@@ -21,9 +21,14 @@ parser.add_argument(
         help='Whether to visualize generated graph or not.', action='store_true'
         )
 parser.add_argument(
-        '-sym', '--symmetric',
-        help='Whether to use symmetric (normalized) Laplacian or not',
+        '-unn', '--unnormalized',
+        help='Whether to use unnormalized Laplacian or not',
         action='store_true'
+        )
+parser.add_argument(
+        '-lar', '--largest',
+        help='whether to use largest (Rohe) or smallest (von Luxburg) k\
+        eigenvectors of the Laplacian.', action='store_true'
         )
 args = parser.parse_args()
 
@@ -31,8 +36,8 @@ args = parser.parse_args()
 def main():
     # Generate SBM graph
     Gamma = np.array([
-            [0.1, 0.05],
-            [0.05, 0.3] 
+            [0.9, 0.05],
+            [0.05, 0.9] 
             ])
     Pi = np.array([0.45, 0.55])
     model = SBM(args.n, Gamma, Pi)
@@ -42,18 +47,10 @@ def main():
 
     # Run the spectral clustering algorithm
     spectral_clustering = SpectralClustering(args.k)
-    labels, centroids = spectral_clustering.cluster(A)
-    print(labels)
+    labels, centroids = spectral_clustering.cluster(
+            A, args.unnormalized, args.largest)
     accuracy_value, accuracy_permutation = accuracy(labels, Z_v)
     print('Accuracy: ', accuracy_value)
-
-    # Compare with sklearn
-    skspectralclustering = skSpectralClustering(
-            n_clusters=2,
-            affinity='precomputed').fit(A)
-    sklabels = skspectralclustering.labels_
-    skaccuracy_value, _ = accuracy(sklabels, Z_v)
-    print('SK accuracy: ', skaccuracy_value)
 
 
 if __name__=="__main__":

@@ -16,12 +16,14 @@ class SpectralClustering():
     def __init__(self, k):
         self.k = k
     
-    def cluster(self, A, sym=False):
+    def cluster(self, A, unn=False, largest=False):
         """Clusters the eigenvectors of the Laplacian matrix.
 
         Args:
             A ((n, n) np.array): adjacency matrix.
-            sym (bool): whether to use symmetric (normalized) Laplacian or not.
+            unn (bool): whether to use unnormalized Laplacian or not.
+            largest (bool): whether to use largest (Rohe) or smallest (von
+            Luxburg) k eigenvectors of the Laplacian.
 
         Returns:
             kmeans.labels_ ((n,) np.array): labels assigned to eigenvectors.
@@ -29,12 +31,14 @@ class SpectralClustering():
         """
 
         n, _ = A.shape
+
+        # Observed
         D = np.diag(np.sum(A, axis=1))
-        L = np.linalg.inv(sqrtm(D))@A@np.linalg.inv(sqrtm(D)) if sym else D-A
+        L = D-A if unn\
+                else np.eye(n)-np.linalg.inv(sqrtm(D))@A@np.linalg.inv(sqrtm(D))
         eigvals, eigvecs = eigh(L)
+        eigvecs = eigvecs[:, (n-self.k):] if largest else eigvecs[:, :self.k]
         eigvecs /= np.linalg.norm(eigvecs, axis=0)
-        eigvecs = eigvecs[:, (n-self.k):]  # largest k eigenvectors
-        print(eigvecs)
         visualize_eigenvectors(eigvecs)
         kmeans = KMeans(n_clusters = self.k).fit(eigvecs)
 

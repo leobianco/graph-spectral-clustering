@@ -18,7 +18,7 @@ def accuracy(labels, Z_v):
         saved_permutation (k np.array): ``correct'' permutation of labels.
     """
 
-    k = int(np.max(Z_v))
+    k = np.unique(Z_v).shape[0]
     accuracy = 0
     all_permutations = list(itertools.permutations(list(range(k))))
     saved_permutation = None
