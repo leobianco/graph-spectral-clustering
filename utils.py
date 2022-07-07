@@ -32,11 +32,30 @@ def accuracy(labels, Z_v):
     return accuracy, saved_permutation
 
 
-def visualize_eigenvectors(eigvecs, centroids):
-    n_centroids = centroids.shape[0]
+def visualize_eigenvectors(eigvecs, centroids, labels, permutation):
+
+    k = centroids.shape[0]  # which is also the number of centroids
     pca = PCA(n_components=2).fit_transform(np.vstack((eigvecs, centroids)))
-    plt.scatter(pca[:-n_centroids,0], pca[:-n_centroids,1])
-    plt.scatter(pca[-n_centroids:,0], pca[-n_centroids:, 1], c='orange')
+
+    # Build correct labels for centroids (must permute).
+    #centroid_label = np.zeros(k)
+    #for i in range(k):
+    #    idx = np.argwhere(labels==i)[0]
+    #    representant = eigvecs[idx,:]
+    #    distances =\
+    #           [np.linalg.norm(representant - centroids[j,:]) for j in range(k)]
+    #    centroid = np.argmin(distances)
+    #    labels_permuted = np.select([labels==i for i in range(k)], permutation)
+    #    centroid_label[centroid] = labels_permuted[idx]
+
+    # pca[:-k, :] = (pca[-k:, :])[centroid_label,:]  # correct labels
+    plt.scatter(pca[:-k,0], pca[:-k,1])
+    plt.scatter(pca[-k:,0], pca[-k:, 1], c='orange')
+    for i in range(k):
+        #plt.annotate(f'{int(centroid_label[i]) + 1}', (pca[-(i+1),0], pca[-(i+1), 1]),
+        #        size=15, xytext=(10, 10), textcoords='offset points')
+        plt.annotate(f'{i+1}', (pca[-(i+1),0], pca[-(i+1), 1]),
+                size=15, xytext=(10, 10), textcoords='offset points')
     plt.show()
 
 
@@ -64,3 +83,20 @@ def draw_graph(A, Z_v):
     pos = nx.spring_layout(G)
     nx.draw(G, pos=pos, node_color=Z_v, with_labels=False)
     plt.show();
+
+
+def load_graph(file_name):
+    """Loads saved graphs
+
+    Args:
+        file_name (string): name of file to be loaded.
+
+    Returns:
+        Parameters and sample information.
+    """
+
+    with open('saved_graphs/'+file_name+'.npz', 'rb') as f:
+        container = np.load(f)
+        Gamma, Pi, Z, Z_v, A = [container[key] for key in container]
+
+    return Gamma, Pi, Z, Z_v, A

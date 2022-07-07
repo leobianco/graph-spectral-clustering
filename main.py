@@ -30,27 +30,36 @@ parser.add_argument(
         help='whether to use largest (Rohe) or smallest (von Luxburg) k\
         eigenvectors of the Laplacian.', action='store_true'
         )
+parser.add_argument(
+        '-l', '--load',
+        help='Loads saved graph', type=str)
 args = parser.parse_args()
 
 
 def main():
     # Generate SBM graph
-    Gamma = np.array([
-            [0.9, 0.01, 0.03],
-            [0.01, 0.9, 0.01],
-            [0.03, 0.01, 0.9]
+    if args.load is None:
+        Gamma = np.array([
+            [0.4, 0.4, 0.01],
+            [0.4, 0.4, 0.01],
+            [0.01, 0.01, 0.4]
             ])
-    Pi = np.array(3*[1/3])
-    model = SBM(args.n, Gamma, Pi)
-    Z, Z_v, A = model.sample()
+        Pi = np.array(3*[1/3])
+        model = SBM(args.n, Gamma, Pi)
+        Z, Z_v, A = model.sample()
+    else:
+        Gamma, Pi, Z, Z_v, A = load_graph(args.load)
+
     if args.visual:
         draw_graph(A, Z_v)
 
     # Run the spectral clustering algorithm
     spectral_clustering = SpectralClustering(args.k)
-    labels, centroids = spectral_clustering.cluster(
+    labels, eigvecs, eigvals, centroids = spectral_clustering.cluster(
             A, args.unnormalized, args.largest)
     accuracy_value, accuracy_permutation = accuracy(labels, Z_v)
+    visualize_eigenvectors(eigvecs, centroids, labels, accuracy_permutation)
+    visualize_eigenvalues(eigvals)
     print('Accuracy: ', accuracy_value)
 
 

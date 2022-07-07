@@ -43,7 +43,5 @@ class SpectralClustering():
         kmeans = KMeans(n_clusters = self.k).fit(eigvecs)
         labels = kmeans.predict(eigvecs)
         centroids = kmeans.cluster_centers_ 
-        visualize_eigenvectors(eigvecs, centroids)
-        visualize_eigenvalues(eigvals)
 
-        return labels, centroids 
+        return labels, eigvecs, eigvals, centroids 
